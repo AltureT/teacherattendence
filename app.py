@@ -56,11 +56,13 @@ class Application(tk.Frame):
 
             try:
                 data.write_excel(file_path, summary)
-                self.text1.insert('insert', '分析完成，打开刚刚下载的 "罗浮中学_每日打卡" 文件·····\n')
+                self.text1.insert('insert', '分析完成，请打开刚刚下载的 "罗浮中学_每日打卡" 文件·····\n')
             except:
                 self.text1.insert('insert', '文件生成出错，请检查·····\n')
 
             print('分析完成，请打开刚刚下载的 "罗浮中学_每日打卡" 文件')
+        else:
+            self.text1.insert('insert', '文件导入为空·····\n')
 
     def open_file(self):
         os.system('open ' + file_path)
