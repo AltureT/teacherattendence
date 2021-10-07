@@ -28,8 +28,6 @@ class Application(tk.Frame):
         file_path = filedialog.askopenfilename(title=u'选择文件', initialdir=(os.path.expanduser('~')))
         print('打开文件：', file_path)
         if file_path is not None:
-            # with open(file=file_path, mode='r+', encoding='utf-8') as file:
-
             try:
                 data = User(file_path)
                 self.text1.insert('insert', '准备统计中·····\n')
@@ -50,6 +48,7 @@ class Application(tk.Frame):
 
             try:
                 summary = data.create_times_list(attendancetimes)
+                print(summary)
                 self.text1.insert('insert', '正在数据生成中·····\n')
             except:
                 self.text1.insert('insert', '数据生成出错，请检查·····\n')
@@ -68,6 +67,7 @@ class Application(tk.Frame):
         os.system('open ' + file_path)
 
 
-app = Application()
-app.master.title('罗浮中学教师打卡统计程序')
-app.mainloop()  # 显示
+if __name__ == '__main__':
+    app = Application()
+    app.master.title('罗浮中学教师打卡统计程序')
+    app.mainloop()  # 显示
