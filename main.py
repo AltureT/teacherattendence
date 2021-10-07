@@ -2,8 +2,6 @@ import openpyxl
 import pandas as pd
 
 
-# from app import file_path
-
 class User:
     def __init__(self, file_path):
         self.filename = file_path
@@ -141,6 +139,19 @@ class User:
             return '异常'
         return '正常'
 
+    def every_week_summary_list(self, index: id, t: str, normal: list, late: list) -> list:
+        x = self.limit_count(sum(normal))
+        y = z = 0
+        if x < 9:
+            if sum(late) >= 9 - x:
+                y = 9 - x
+                z = 0
+            else:
+                y = sum(late)
+                z = 9 - x - y
+
+        return [self.name[index - 1], t, x, y, z, self.status(y, z)]
+
     # ---------每周次数统计------------
 
     def create_times_list(self, attendancetimes: list) -> dict:
@@ -186,19 +197,7 @@ class User:
 
             # 遇到同一人，在周六，则统计本周数据，并保存结果，最后初始化每周临时数据
             elif sameuser and self.week.index(d) == 6:
-                x = sum(normal)
-                y = z = 0
-                if x < 9:
-                    if sum(late) >= 9 - x:
-                        y = 9 - x
-                        z = 0
-                    else:
-                        y = sum(late)
-                        z = 9 - x - y
-                x = self.limit_count(sum(normal))
-
-                temp = [self.name[i], t, x, y, z, self.status(y, z)]
-
+                temp = self.every_week_summary_list(i, t, normal, late)
                 summary[id].append(temp)
                 normal = [0] * 7
                 late = [0] * 7
@@ -207,16 +206,7 @@ class User:
 
             # 遇到不同人，在周六，则统计本周数据给上一位用户，并保存结果，最后初始化每周临时数据，并更新新用户id
             elif not sameuser and self.week.index(d) == 6:
-                x = sum(normal)
-                y = z = 0
-                if x < 9:
-                    if sum(late) >= 9 - x:
-                        y = 9 - x
-                        z = 0
-                    else:
-                        y = sum(late)
-                        z = 9 - x - y
-                temp = [self.name[i - 1], t, x, y, z, self.status(y, z)]
+                temp = self.every_week_summary_list(i - 1, t, normal, late)
                 summary[str(self.userid[i - 1])].append(temp)
                 normal = [0] * 7
                 late = [0] * 7
@@ -237,22 +227,11 @@ class User:
                     for j in range(self.week.index(self.attendancedate[i - 1][-3:]) + 1, 6):
                         normal[j] = 2
 
-                    x = sum(normal)
-                    y = z = 0
-                    if x < 9:
-                        if sum(late) >= 9 - x:
-                            y = 9 - x
-                            z = 0
-                        else:
-                            y = sum(late)
-                            z = 9 - x - y
-                    temp = [self.name[i - 1], t, x, y, z, self.status(y, z)]
+                    temp = self.every_week_summary_list(i - 1, t, normal, late)
                     summary[str(self.userid[i - 1])].append(temp)
                     normal = [0] * 7
                     late = [0] * 7
                     severly = [0] * 7
-
-
                 # 第二种情况
                 else:
                     pass
@@ -265,6 +244,12 @@ class User:
                 print('遇到特殊情况，请检查数据·······')
 
             i += 1
+
+        # 表格最后一组数据存储
+        for j in range(self.week.index(self.attendancedate[i - 1][-3:]) + 1, 6):
+            normal[j] = 2
+        temp = self.every_week_summary_list(i - 1, t, normal, late)
+        summary[str(self.userid[i - 1])].append(temp)
 
         return summary
 
