@@ -48,7 +48,6 @@ class Application(tk.Frame):
 
             try:
                 summary = data.create_times_list(attendancetimes)
-                print(summary)
                 self.text1.insert('insert', '正在数据生成中·····\n')
             except:
                 self.text1.insert('insert', '数据生成出错，请检查·····\n')
