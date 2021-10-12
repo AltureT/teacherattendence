@@ -9,14 +9,29 @@ class Application(tk.Frame):
     def __init__(self, master=None):
         tk.Frame.__init__(self, master)
         self.pack()
-        self.text1 = tk.Text(self, width=50, height=10, bg='white', font=('Arial', 12))
+        self.text1 = tk.Text(self, width=50, height=10,
+                             bg='white', font=('Arial', 12))
         self.text1.pack()
+        # self.chvarone = tk.IntVar()
+        # self.chvartwo = tk.IntVar()
+        # self.chvarthree = tk.IntVar()
         self.createWidgets()
 
     def createWidgets(self):
-        bt1 = tk.Button(self, text='上传文件', width=15, height=2, command=self.upload_file)
+
+        # checkone = tk.Checkbutton(self, text='高一', variable=self.chvarone)
+        # checkone.pack()
+        #
+        # checktwo = tk.Checkbutton(self, text='高二', variable=self.chvartwo)
+        # checktwo.pack()
+        #
+        # checkthree = tk.Checkbutton(self, text='高三', variable=self.chvarthree)
+        # checkthree.pack()
+        bt1 = tk.Button(self, text='上传文件', width=15,
+                        height=2, command=self.upload_file)
         bt1.pack()
-        bt2 = tk.Button(self, text='打开文件', width=15, height=2, command=self.open_file)
+        bt2 = tk.Button(self, text='打开文件', width=15,
+                        height=2, command=self.open_file)
         bt2.pack()
 
     def upload_file(self):
@@ -25,36 +40,38 @@ class Application(tk.Frame):
         :return:
         '''
         global file_path
-        file_path = filedialog.askopenfilename(title=u'选择文件', initialdir=(os.path.expanduser('~')))
+        file_path = filedialog.askopenfilename(
+            title=u'选择文件', initialdir=(os.path.expanduser('~')))
         print('打开文件：', file_path)
         if file_path is not None:
             try:
-                data = User(file_path)
                 self.text1.insert('insert', '准备统计中·····\n')
+                data = User(file_path)
             except:
                 self.text1.insert('insert', '文件导入出错·····\n')
 
             try:
-                attendancetimes = data.get_work_times()
                 self.text1.insert('insert', '正在统计每日打卡情况·····\n')
+                attendancetimes = data.get_work_times()
             except:
                 self.text1.insert('insert', '数据统计出错，请检查·····\n')
 
             try:
-                data.every_times_count(attendancetimes)
                 self.text1.insert('insert', '正在各类情况汇总·····\n')
+                data.every_times_count(attendancetimes)
             except:
                 self.text1.insert('insert', '数据汇总出错，请检查·····\n')
 
             try:
-                summary = data.create_times_list(attendancetimes)
                 self.text1.insert('insert', '正在数据生成中·····\n')
+                summary = data.create_times_list(attendancetimes)
             except:
                 self.text1.insert('insert', '数据生成出错，请检查·····\n')
 
             try:
                 data.write_excel(file_path, summary)
-                self.text1.insert('insert', '分析完成，请打开刚刚下载的 "罗浮中学_每日打卡" 文件·····\n')
+                self.text1.insert(
+                    'insert', '分析完成，请打开刚刚下载的 "罗浮中学_每日打卡" 文件·····\n')
             except:
                 self.text1.insert('insert', '文件生成出错，请检查·····\n')
 

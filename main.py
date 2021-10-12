@@ -29,7 +29,9 @@ class User:
         self.attendance = self.df.loc[:,
                           ['上班1打卡时间', '下班1打卡时间', '上班2打卡时间', '下班2打卡时间', '上班3打卡时间', '下班3打卡时间']].values.tolist()
         self.attendancedate = self.df.loc[:, '日期'].values.tolist()
-        self.leave = self.df.loc[:, ['上班1打卡结果', '下班1打卡结果', '上班2打卡结果', '下班2打卡结果', '上班3打卡结果', '下班3打卡结果']].values.tolist()
+        self.leave = self.df.loc[:, [
+                                        '上班1打卡结果', '下班1打卡结果', '上班2打卡结果', '下班2打卡结果', '上班3打卡结果',
+                                        '下班3打卡结果']].values.tolist()
         self.festival = self.df.loc[:, '班次'].values.tolist()
         self.userid = self.df.loc[:, 'UserId'].values.tolist()
         self.week = ('星期日', '星期一', '星期二', '星期三', '星期四', '星期五', '星期六')
@@ -85,20 +87,20 @@ class User:
         if array[0] == -1 or array[1] == -1:
             return False
         # 工作时间按3小时（180）分钟计算,晚自习则根据最后打卡时间超过八点计算
-        if self.get_work_time(array[1], array[0]) >= 180 or array[1][0:3] >= '20':
+        if self.get_work_time(array[1], array[0]) >= 180 \
+                or array[1][0:3] >= '20':
             return True
 
         return False
 
+    def make_up(self, a: str, b: str) -> bool:
+        if a == '补卡审批通过' and b == '补卡审批通过' or \
+                a == '补卡审批通过' and b == '正常' or \
+                a == '正常' and b == '补卡审批通过':
+            return True
+        return False
+
     def get_work_times(self) -> list:
-        '''
-
-        :param data: 21-09-01 星期三
-        :param attendance: [06:52,11:45,13:52,17:14,0,0]
-        :param leave:['请假','请假','请假','正常','缺卡','缺卡']
-        :return:
-        '''
-
         countresult = []
         for i in range(len(self.attendance)):
             c = 0
@@ -109,17 +111,24 @@ class User:
                     self.attendancedate[i][-3:] != '星期日' and \
                     (self.leave[i].count('休息') >= 4 or self.festival[i] == '休息'):
                 c = 2
+            # 如果是周日晚自习时间达标
+            elif self.attendancedate[i][-3:] == '星期日':
+                if self.enough_work_time(self.attendance[i][4:6]):
+                    c = c + 1
             # 正常上班时，一日最多两次计数统计
             else:
+                # 请假算正常工作
                 if 1 <= self.leave[i].count('请假') <= 3:
                     c = 1
                 elif self.leave[i].count('请假') >= 4:
                     c = 2
                 for j in range(0, len(self.attendance[0]), 2):
                     if c < 2:
-                        worktime = self.get_work_time(self.attendance[i][j], self.attendance[i][j + 1])
-                        # 请假,补卡也算正常打卡
-                        if self.enough_work_time(self.attendance[i][j:j + 2]):
+                        worktime = self.get_work_time(self.attendance[i][j],
+                                                      self.attendance[i][j + 1])
+                        # 时间足够、补卡都算正常打卡
+                        if self.enough_work_time(self.attendance[i][j:j + 2]) or \
+                                self.make_up(self.leave[i][j], self.leave[i][j + 1]):
                             c = c + 1
                         elif 180 - worktime >= 30:
                             severly += 1
@@ -172,7 +181,8 @@ class User:
         severly = [0] * 7
         start = 0
         end = 0
-        t = str(self.attendancedate[start]) + ' -> ' + str(self.attendancedate[end])
+        t = str(self.attendancedate[start]) + ' -> ' + \
+            str(self.attendancedate[end])
         i = 0
         first = True
         while i < len(self.userid):
@@ -185,6 +195,15 @@ class User:
             else:
                 sameuser = True
 
+            # 如果周六调休工作，则记录当天数据
+            if self.week.index(d) == 6 and '休息' != self.festival[i]:
+                normal[self.week.index(d)] = attendancetimes[i][0]
+                late[self.week.index(d)] = attendancetimes[i][1]
+                severly[self.week.index(d)] = attendancetimes[i][2]
+                end = i
+                t = str(self.attendancedate[start]) + ' -> ' + \
+                    str(self.attendancedate[end])
+
             # 遇到第一人，或遇到同一人，且不在周六，则累计统计本周数据
             if first or sameuser and self.week.index(d) != 6:
                 # 计入normal late severly，t数组，并增加长度
@@ -193,7 +212,8 @@ class User:
                 late[self.week.index(d)] = attendancetimes[i][1]
                 severly[self.week.index(d)] = attendancetimes[i][2]
                 end = i
-                t = str(self.attendancedate[start]) + ' -> ' + str(self.attendancedate[end])
+                t = str(self.attendancedate[start]) + ' -> ' + \
+                    str(self.attendancedate[end])
 
             # 遇到同一人，在周六，则统计本周数据，并保存结果，最后初始化每周临时数据
             elif sameuser and self.week.index(d) == 6:
@@ -215,7 +235,9 @@ class User:
                 start = i + 1
                 summary[id] = []
 
-            # 遇到不同人，不在周六，有两种情况，一是数据只记录到中间，后续数据缺失，二是上一位用户周六统计完成，新用户开始，不需要处理
+            # 遇到不同人，不在周六，有两种情况，
+            # 一是数据只记录到中间，后续数据缺失，
+            # 二是上一位用户周六统计完成，新用户开始，不需要处理
             # 假设上一位用户后面几天打卡完全，并保存结果给上一位用户，最后初始化每周临时数据，同时该天数据继续统计
             elif not first and not sameuser and self.week.index(d) != 6:
                 # 第一种情况，如：
@@ -245,11 +267,12 @@ class User:
 
             i += 1
 
-        # 表格最后一组数据存储
-        for j in range(self.week.index(self.attendancedate[i - 1][-3:]) + 1, 6):
-            normal[j] = 2
-        temp = self.every_week_summary_list(i - 1, t, normal, late)
-        summary[str(self.userid[i - 1])].append(temp)
+        # 表格最后一组数据如果有则存储
+        if sum(normal) != 0 and sum(late) != 0:
+            for j in range(self.week.index(self.attendancedate[i - 1][-3:]) + 1, 6):
+                normal[j] = 2
+            temp = self.every_week_summary_list(i - 1, t, normal, late)
+            summary[str(self.userid[i - 1])].append(temp)
 
         return summary
 
