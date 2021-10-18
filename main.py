@@ -64,17 +64,17 @@ class User:
             return False
         return True
 
-    def get_work_time(self, s1: str, s2: str) -> int:
-        if s1 == -1 or s2 == -1:
+    def get_work_time(self, start: str, end: str) -> int:
+        if start == -1 or end == -1:
             return 0
-        hour1 = int(s1[0:2])
-        minute1 = int(s1[3:5])
-        hour2 = int(s2[0:2])
-        minute2 = int(s2[3:5])
-        if minute1 < minute2:
-            minute1 += 60
-            hour1 -= 1
-        worktime = (hour1 - hour2) * 60 + minute1 - minute2
+        hour1 = int(start[0:2])
+        minute1 = int(start[3:5])
+        hour2 = int(end[0:2])
+        minute2 = int(end[3:5])
+        if minute1 > minute2:
+            minute2 += 60
+            hour2 -= 1
+        worktime = (hour2 - hour1) * 60 + minute2 - minute1
         return worktime
 
     def enough_work_time(self, array: list) -> bool:
@@ -87,8 +87,8 @@ class User:
         if array[0] == -1 or array[1] == -1:
             return False
         # 工作时间按3小时（180）分钟计算,晚自习则根据最后打卡时间超过八点计算
-        if self.get_work_time(array[1], array[0]) >= 180 \
-                or array[1][0:3] >= '20':
+        if self.get_work_time(array[0], array[1]) >= 180 \
+                or int(array[0][0:2]) >= 0 and int(array[1][0:2]) >= 20:
             return True
 
         return False
@@ -113,8 +113,8 @@ class User:
                 c = 2
             # 如果是周日晚自习时间达标
             elif self.attendancedate[i][-3:] == '星期日':
-                if self.enough_work_time(self.attendance[i][4:6]):
-                    c = c + 1
+                if self.enough_work_time(self.attendance[i][0:2]):
+                    c = 1
             # 正常上班时，一日最多两次计数统计
             else:
                 # 请假算正常工作
@@ -273,15 +273,23 @@ class User:
                 normal[j] = 2
             temp = self.every_week_summary_list(i - 1, t, normal, late)
             summary[str(self.userid[i - 1])].append(temp)
-
+        # print(summary[])
         return summary
 
     # 写入excel文件
-    def write_excel(self, path: str, summary: dict):
+    def write_excel(self, path: str, summary: dict, attendancetimes: list):
         title = ['姓名', '日期', '正常打卡次数', '缺30分钟以内次数', '缺30分钟以上次数', '状态']
 
         workbook = openpyxl.load_workbook(self.filename)
+        originsheet = workbook['每日统计']
         sheet = workbook.create_sheet('按周统计汇总')
+        originsheet.cell(row=3, column=26, value='正常')
+        originsheet.cell(row=3, column=27, value='迟到30分钟以内')
+        originsheet.cell(row=3, column=28, value='迟到30分钟以外')
+        for i in range(len(self.userid)):
+            originsheet.cell(row=i + 4, column=26, value=attendancetimes[i][0])
+            originsheet.cell(row=i + 4, column=27, value=attendancetimes[i][1])
+            originsheet.cell(row=i + 4, column=28, value=attendancetimes[i][2])
 
         for i in range(5):
             sheet.cell(row=1, column=i + 1, value=title[i])
