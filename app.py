@@ -12,24 +12,18 @@ class Application(tk.Frame):
         self.text1 = tk.Text(self, width=50, height=10,
                              bg='white', font=('Arial', 12))
         self.text1.pack()
-        # self.chvarone = tk.IntVar()
-        # self.chvartwo = tk.IntVar()
-        # self.chvarthree = tk.IntVar()
         self.createWidgets()
 
     def createWidgets(self):
 
-        # checkone = tk.Checkbutton(self, text='高一', variable=self.chvarone)
-        # checkone.pack()
-        #
-        # checktwo = tk.Checkbutton(self, text='高二', variable=self.chvartwo)
-        # checktwo.pack()
-        #
-        # checkthree = tk.Checkbutton(self, text='高三', variable=self.chvarthree)
-        # checkthree.pack()
-        bt1 = tk.Button(self, text='上传文件', width=15,
+        bt1 = tk.Button(self, text='上传教师考勤文件', width=15,
                         height=2, command=self.upload_file)
         bt1.pack()
+
+        bt3 = tk.Button(self, text='上传行政考勤文件', width=15,
+                        height=2, command=self.upload_file)
+        bt3.pack()
+
         bt2 = tk.Button(self, text='打开文件', width=15,
                         height=2, command=self.open_file)
         bt2.pack()
@@ -44,11 +38,6 @@ class Application(tk.Frame):
             title=u'选择文件', initialdir=(os.path.expanduser('~')))
         print('打开文件：', file_path)
         if file_path is not None:
-            # data = User(file_path)
-            # attendancetimes = data.get_work_times()
-            # data.every_times_count(attendancetimes)
-            # summary = data.create_times_list(attendancetimes)
-            # data.write_excel(file_path, summary, attendancetimes)
             try:
                 self.text1.insert('insert', '准备统计中·····\n')
                 data = User(file_path)

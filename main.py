@@ -18,6 +18,7 @@ class User:
         # 重设行索引为userID，建立多层索引
         self.userid = self.df.loc[:, 'UserId'].values.tolist()
         self.name = self.df.loc[:, '姓名'].values.tolist()
+
         self.array = []
         self.array.append(self.userid)
         self.array.append(self.name)
@@ -27,10 +28,12 @@ class User:
         self.df = self.df.fillna(value=-1)
 
         self.attendance = self.df.loc[:,
-                          ['上班1打卡时间', '下班1打卡时间', '上班2打卡时间', '下班2打卡时间', '上班3打卡时间', '下班3打卡时间']].values.tolist()
+                          ['上班1打卡时间', '下班1打卡时间', '上班2打卡时间', '下班2打卡时间', '上班3打卡时间',
+                           '下班3打卡时间']].values.tolist()
         self.attendancedate = self.df.loc[:, '日期'].values.tolist()
         self.leave = self.df.loc[:, [
-                                        '上班1打卡结果', '下班1打卡结果', '上班2打卡结果', '下班2打卡结果', '上班3打卡结果',
+                                        '上班1打卡结果', '下班1打卡结果', '上班2打卡结果', '下班2打卡结果',
+                                        '上班3打卡结果',
                                         '下班3打卡结果']].values.tolist()
         self.festival = self.df.loc[:, '班次'].values.tolist()
         self.userid = self.df.loc[:, 'UserId'].values.tolist()
