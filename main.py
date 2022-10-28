@@ -18,7 +18,6 @@ class User:
         # 重设行索引为userID，建立多层索引
         self.userid = self.df.loc[:, 'UserId'].values.tolist()
         self.name = self.df.loc[:, '姓名'].values.tolist()
-
         self.array = []
         self.array.append(self.userid)
         self.array.append(self.name)
@@ -36,6 +35,8 @@ class User:
                                         '上班3打卡结果',
                                         '下班3打卡结果']].values.tolist()
         self.festival = self.df.loc[:, '班次'].values.tolist()
+        self.attend_group = self.df.loc[:, '考勤组'].values.tolist()
+
         self.userid = self.df.loc[:, 'UserId'].values.tolist()
         self.week = ('星期日', '星期一', '星期二', '星期三', '星期四', '星期五', '星期六')
         self.backschool = '星期日'
@@ -115,7 +116,7 @@ class User:
                     (self.leave[i].count('休息') >= 4 or self.festival[i] == '休息'):
                 c = 2
             # 如果是周日晚自习时间达标
-            elif self.attendancedate[i][-3:] == '星期日':
+            elif self.attendancedate[i][-3:] == '星期日' and self.attend_group[i] == '教师考勤打卡':
                 if self.enough_work_time(self.attendance[i][0:2]):
                     c = 1
             # 正常上班时，一日最多两次计数统计
@@ -127,16 +128,27 @@ class User:
                     c = 2
                 for j in range(0, len(self.attendance[0]), 2):
                     if c < 2:
-                        worktime = self.get_work_time(self.attendance[i][j],
-                                                      self.attendance[i][j + 1])
-                        # 时间足够、补卡都算正常打卡
-                        if self.enough_work_time(self.attendance[i][j:j + 2]) or \
-                                self.make_up(self.leave[i][j], self.leave[i][j + 1]):
-                            c = c + 1
-                        elif 180 - worktime >= 30:
-                            severly += 1
-                        elif 0 < 180 - worktime < 30:
-                            late += 1
+                        if self.attend_group[i] == '教师考勤打卡':
+                            worktime = self.get_work_time(self.attendance[i][j],
+                                                          self.attendance[i][j + 1])
+                            # 时间足够、补卡都算正常打卡
+                            if self.enough_work_time(self.attendance[i][j:j + 2]) or \
+                                    self.make_up(self.leave[i][j], self.leave[i][j + 1]):
+                                c = c + 1
+                            elif 180 - worktime >= 30:
+                                severly += 1
+                            elif 0 < 180 - worktime < 30:
+                                late += 1
+                        else:
+                            if self.leave[i][j] == self.leave[i][j + 1] == '正常' or \
+                                    self.make_up(self.leave[i][j], self.leave[i][j + 1]):
+                                c = c + 1
+                            elif self.leave[i][j] == '迟到' and self.leave[i][j + 1] == '正常' or \
+                                    self.leave[i][j] == '正常' and self.leave[i][j + 1] == '迟到':
+                                late += 1
+                            elif self.leave[i][j] == '迟到' and self.leave[i][j + 1] == '迟到' or \
+                                    self.leave[i][j] == '缺卡' or self.leave[i][j + 1] == '缺卡':
+                                severly += 1
             r = [c, late, severly]
             countresult.append(r)
         return countresult
