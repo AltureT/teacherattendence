@@ -115,8 +115,10 @@ class User:
                     self.attendancedate[i][-3:] != '星期日' and \
                     (self.leave[i].count('休息') >= 4 or self.festival[i] == '休息'):
                 c = 2
-            # 如果是周日晚自习时间达标
+            # 如果是周日晚自习时间达标,或者周日晚自习请假：如护理假产假等
             elif self.attendancedate[i][-3:] == '星期日' and self.attend_group[i] == '教师考勤打卡':
+                if 1 <= self.leave[i].count('请假') <= 3:
+                    c = 1
                 if self.enough_work_time(self.attendance[i][0:2]):
                     c = 1
             # 正常上班时，一日最多两次计数统计
