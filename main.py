@@ -98,9 +98,8 @@ class User:
         return False
 
     def make_up(self, a: str, b: str) -> bool:
-        if a == '补卡审批通过' and b == '补卡审批通过' or \
-                a == '补卡审批通过' and b == '正常' or \
-                a == '正常' and b == '补卡审批通过':
+        condition = ['补卡审批通过', '正常', '补卡审批通过', '管理员郑凯改为正常']
+        if a in condition and b in condition:
             return True
         return False
 
