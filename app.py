@@ -1,30 +1,29 @@
-import tkinter as tk
-import os
-from tkinter import filedialog
-
+# import tkinter as tk
+from tkinter import Frame,Text,Button,filedialog
+from os import system,path
 from main import User
 
 
-class Application(tk.Frame):
+class Application(Frame):
     def __init__(self, master=None):
-        tk.Frame.__init__(self, master)
+        Frame.__init__(self, master)
         self.pack()
-        self.text1 = tk.Text(self, width=50, height=10,
+        self.text1 = Text(self, width=50, height=10,
                              bg='white', font=('Arial', 12))
         self.text1.pack()
         self.createWidgets()
 
     def createWidgets(self):
 
-        bt1 = tk.Button(self, text='上传教师考勤文件', width=15,
+        bt1 = Button(self, text='上传教师考勤文件', width=15,
                         height=2, command=self.upload_file)
         bt1.pack()
 
-        bt3 = tk.Button(self, text='上传行政考勤文件', width=15,
+        bt3 = Button(self, text='上传行政考勤文件', width=15,
                         height=2, command=self.upload_file)
         bt3.pack()
 
-        bt2 = tk.Button(self, text='打开文件', width=15,
+        bt2 = Button(self, text='打开文件', width=15,
                         height=2, command=self.open_file)
         bt2.pack()
 
@@ -35,7 +34,7 @@ class Application(tk.Frame):
         '''
         global file_path
         file_path = filedialog.askopenfilename(
-            title=u'选择文件', initialdir=(os.path.expanduser('~')))
+            title=u'选择文件', initialdir=(path.expanduser('~')))
         print('打开文件：', file_path)
         if file_path is not None:
             try:
@@ -74,7 +73,7 @@ class Application(tk.Frame):
             self.text1.insert('insert', '文件导入为空·····\n')
 
     def open_file(self):
-        os.system('open ' + file_path)
+        system('open ' + file_path)
         # os.startfile(file_path)
 
 

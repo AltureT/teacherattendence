@@ -1,13 +1,14 @@
-import openpyxl
-import pandas as pd
-
+# import openpyxl
+from openpyxl import load_workbook
+# import pandas as pd
+from pandas import read_excel,MultiIndex
 
 class User:
     def __init__(self, file_path):
         self.filename = file_path
 
         # 文件导入从周日或者周一开始，否则第一周情况会出现问题
-        self.df = pd.read_excel(self.filename, sheet_name='每日统计')
+        self.df = read_excel(self.filename, sheet_name='每日统计')
 
         # ---------数据处理------------
         # 重设标题索引，丢弃无用行
@@ -22,7 +23,7 @@ class User:
         self.array.append(self.userid)
         self.array.append(self.name)
         tuples = list(zip(*self.array))
-        index = pd.MultiIndex.from_tuples(tuples, names=['userid', '姓名'])
+        index = MultiIndex.from_tuples(tuples, names=['userid', '姓名'])
         self.df.index = index
         self.df = self.df.fillna(value=-1)
 
@@ -118,7 +119,9 @@ class User:
             elif self.attendancedate[i][-3:] == '星期日' and self.attend_group[i] == '教师考勤打卡':
                 if 1 <= self.leave[i].count('请假') <= 3:
                     c = 1
-                if self.enough_work_time(self.attendance[i][0:2]):
+
+                # 周日晚上打卡，或者周日为法定调休日，选择第5-6次打卡数据
+                if self.enough_work_time(self.attendance[i][0:2]) or self.enough_work_time(self.attendance[i][4:6]):
                     c = 1
             # 正常上班时，一日最多两次计数统计
             else:
@@ -296,7 +299,8 @@ class User:
     def write_excel(self, path: str, summary: dict, attendancetimes: list):
         title = ['姓名', '日期', '正常打卡次数', '缺30分钟以内次数', '缺30分钟以上次数', '状态']
 
-        workbook = openpyxl.load_workbook(self.filename)
+        # workbook = openpyxl.load_workbook(self.filename)
+        workbook = load_workbook(self.filename)
         originsheet = workbook['每日统计']
         sheet = workbook.create_sheet('按周统计汇总')
         originsheet.cell(row=3, column=26, value='正常')
