@@ -88,7 +88,7 @@ class User:
         :param array: [06:52,11:45]
         :return: True
         '''
-
+        print(array)
         if array[0] == -1 or array[1] == -1:
             return False
         # 工作时间按3小时（180）分钟计算,晚自习则根据最后打卡时间超过八点计算

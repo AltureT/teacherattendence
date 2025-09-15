@@ -43,11 +43,11 @@ class Application(Frame):
             except:
                 self.text1.insert('insert', '文件导入出错·····\n')
 
-            try:
-                self.text1.insert('insert', '正在统计每日打卡情况·····\n')
-                attendancetimes = data.get_work_times()
-            except:
-                self.text1.insert('insert', '数据统计出错，请检查·····\n')
+            # try:
+            self.text1.insert('insert', '正在统计每日打卡情况·····\n')
+            attendancetimes = data.get_work_times()
+            # except:
+            #     self.text1.insert('insert', '数据统计出错，请检查·····\n')
 
             try:
                 self.text1.insert('insert', '正在各类情况汇总·····\n')
