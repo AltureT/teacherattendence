@@ -259,7 +259,7 @@ class AttendanceChecker:
     def standardize_columns(self):
         """标准化列名"""
         # 基础列映射
-        base_columns = ["姓名", "考勤组", "部门", "工号", "职位", "UserId", "日期", "workDate", "班次"]
+        base_columns = ["姓名", "考勤组", "部门", "主部门","工号", "职位", "UserId", "日期", "workDate", "班次"]
 
         # 教师组列（2次打卡）
         teacher_columns = ["上班1打卡时间", "上班1打卡结果", "下班1打卡时间", "下班1打卡结果"]
